@@ -3,11 +3,9 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 import type { Point } from "typeorm";
 
 @Entity('lost_pet')
-export class LostPet {
+export class FoundPet {
     @PrimaryGeneratedColumn()
     id!: number
-    @Column()
-    name: string
     @Column()
     species: string
     @Column()
@@ -21,11 +19,11 @@ export class LostPet {
     @Column()
     photo_url: string
     @Column()
-    owner_name: string
+    finder_name: string
     @Column()
-    owner_email: string
+    finder_email: string
     @Column()
-    owner_phone: string
+    finder_phone: string
     @Column({type:'geometry', spatialFeatureType:'Point', srid: 4326})
     location: Point
     @Column()
@@ -36,5 +34,5 @@ export class LostPet {
     created_at: Date
     @UpdateDateColumn()
     updated_at: Date
-
+    
 }
