@@ -38,17 +38,19 @@ export class FoundPetService {
         await this.foudPetRepository.save(newPet);
         const lostPets: LostPet[] = await this.lostPetRepository.query(`
             SELECT *,
-            ST_Distance(
-                location,
-                ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography
-            ) AS distance
-            FROM lost_pets
-            WHERE is_active = true
-            AND ST_DWithin(
-                location,
-                ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography,
-                500
-            )
+                ST_X(location::geometry) AS lon,
+                ST_Y(location::geometry) AS lat,
+                ST_Distance(
+                    location,
+                    ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography
+                ) AS distance
+                FROM lost_pet
+                WHERE is_active = true
+                AND ST_DWithin(
+                    location,
+                    ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography,
+                    500
+                )
             ORDER BY distance ASC
         `) as LostPet[];
 

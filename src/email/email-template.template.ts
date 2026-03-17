@@ -10,7 +10,7 @@ export const generateEmailTemplate = (foundPet: FoundPet, lostPet: LostPet): str
     });
 
     const mapImageUrl = generateMapBoxImageTwoPoints(
-        lostPet.location.coordinates[0], lostPet.location.coordinates[1],
+        (lostPet as any).lon, (lostPet as any).lat,
         foundPet.location.coordinates[0], foundPet.location.coordinates[1]
     );
 

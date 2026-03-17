@@ -32,6 +32,8 @@ export class LostPet {
     address: string
     @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     lost_date: Date
+    @Column({default: true})
+    is_active: boolean
     @CreateDateColumn()
     created_at: Date
     @UpdateDateColumn()
