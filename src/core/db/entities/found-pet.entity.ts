@@ -29,7 +29,7 @@ export class FoundPet {
     @Column()
     address: string
     @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
-    lost_date: Date
+    found_date: Date
     @CreateDateColumn()
     created_at: Date
     @UpdateDateColumn()

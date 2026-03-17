@@ -1,4 +1,72 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FoundPet } from 'src/core/db/entities/found-pet.entity';
+import { LostPet } from 'src/core/db/entities/lost-pet.entity';
+import { EmailOptions } from 'src/core/interfaces/EmailOptions.interface';
+import { FoundPetDTO } from 'src/core/interfaces/FoundPetDTO.interface';
+import { generateEmailTemplate } from 'src/email/email-template.template';
+import { EmailService } from 'src/email/email.service';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class FoundPetService {}
+export class FoundPetService {
+    constructor(
+        @InjectRepository(LostPet)
+        private readonly lostPetRepository: Repository<LostPet>,
+        @InjectRepository(FoundPet)
+        private readonly foudPetRepository: Repository<FoundPet>,
+        private readonly emailService: EmailService
+    ){}
+    async createFoundPet(foundPet: FoundPetDTO): Promise<Boolean>{
+        const newPet = this.foudPetRepository.create({
+            species: foundPet.species,
+            breed: foundPet.breed,
+            color: foundPet.color,
+            size: foundPet.size,
+            description: foundPet.description,
+            photo_url: foundPet.photo_url,
+            finder_name: foundPet.finder_name,
+            finder_email: foundPet.finder_email,
+            finder_phone: foundPet.finder_phone,
+            location: {
+                type: 'Point',
+                coordinates: [foundPet.location.lon, foundPet.location.lat]
+            },
+            address: foundPet.address
+        });
+
+        await this.foudPetRepository.save(newPet);
+        const lostPets: LostPet[] = await this.lostPetRepository.query(`
+            SELECT *,
+            ST_Distance(
+                location,
+                ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography
+            ) AS distance
+            FROM lost_pets
+            WHERE is_active = true
+            AND ST_DWithin(
+                location,
+                ST_SetSRID(ST_MakePoint(${foundPet.location.lon}, ${foundPet.location.lat}), 4326)::geography,
+                500
+            )
+            ORDER BY distance ASC
+        `) as LostPet[];
+
+        if (lostPets.length == 0) {
+            return false;
+        }
+
+        for (const lostPet of lostPets) {
+            const template = generateEmailTemplate(newPet, lostPet);
+            const options: EmailOptions = {
+                to: lostPet.owner_email,
+                subject: '¡Encontramos una mascota cerca de donde perdiste a la tuya!',
+                html: template
+            };
+            const res = await this.emailService.sendEmail(options);
+            return res;
+        }
+        
+        return true;
+    }
+}
