@@ -29,8 +29,8 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres_data_db:/var/lib/postgresql
-  redis: 
+      - postgres_data_db:/var/lib/postgresql/data
+  redis:
     image: redis
     container_name: pet-radar-redis
     ports:
@@ -40,5 +40,7 @@ services:
     
 volumes:
   postgres_data_db:
+    name: petradar_postgres_data
   redis_data_db:
+    name: petradar_redis_data
 

@@ -78,7 +78,7 @@ jobs:
                   POSTGRES_PASSWORD: ${DB_PASSWORD}
                   POSTGRES_DB: ${DB_NAME}
                 volumes:
-                  - postgres_data_db:/var/lib/postgresql
+                  - postgres_data_db:/var/lib/postgresql/data
                 restart: unless-stopped
 
               redis:
@@ -92,7 +92,9 @@ jobs:
 
             volumes:
               postgres_data_db:
+                name: petradar_postgres_data
               redis_data_db:
+                name: petradar_redis_data
             COMPOSEEOF
 
             docker compose down --remove-orphans
